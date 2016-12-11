@@ -37,9 +37,7 @@ def plot_raw_data(ratings):
 
 def plot_train_test_data(train, test):
     """visualize the train and test data."""
-    train = train.T
-    test = test.T
-    fig = plt.figure(figsize=(16, 48))
+    fig = plt.figure(figsize=(16, 16))
     ax1 = fig.add_subplot(1, 2, 1)
     ax1.spy(train, precision=0.01, markersize=0.01)
     ax1.set_xlabel("Users")
@@ -58,7 +56,7 @@ def visualization(epochs, mse_tr, mse_te):
     """visualization the curves of mse_tr and mse_te."""
     plt.semilogx(epochs, mse_tr, marker=".", color='b', label='train error')
     plt.semilogx(epochs, mse_te, marker=".", color='r', label='test error')
-    plt.xlabel("epochs")
+    plt.xlabel("k")
     plt.ylabel("rmse")
     plt.title("cross validation")
     plt.legend(loc=2)
