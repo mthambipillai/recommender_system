@@ -5,6 +5,8 @@ from itertools import groupby
 
 import numpy as np
 import scipy.sparse as sp
+import csv
+import sys
 
 
 def read_txt(path):
@@ -12,6 +14,17 @@ def read_txt(path):
     with open(path, "r") as f:
         return f.read().splitlines()
 
+def write_data(path_dataset, submission_ratings):
+    f = open(path_dataset, 'wt')
+    nz_row, nz_col = submission_ratings.nonzero()
+    try:
+        writer = csv.writer(f)
+        writer.writerow( ('Id', 'Prediction') )
+        for i in range(0, len(nz_col)):
+            ide = "r" + str(nz_col[i]+1) + "_c" + str(nz_row[i]+1)
+            writer.writerow((ide, int(submission_ratings[nz_row[i],nz_col[i]] + 0.5)))
+    finally:
+        f.close()
 
 def load_data(path_dataset):
     """Load data in text format, one rating per line, as in the kaggle competition."""
