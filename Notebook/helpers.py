@@ -73,3 +73,85 @@ def calculate_mse(real_label, prediction):
     """calculate MSE."""
     t = real_label - prediction
     return 1.0 * t.dot(t.T)
+
+import csv
+import sys
+def exportSubmission(path, pred):
+    path_dataset = "data/sampleSubmission.csv"
+    submission_ratings = load_data(path_dataset)
+    submission_ratings.shape
+    nz_row, nz_col = submission_ratings.nonzero()
+    for i in range(0, len(nz_col)):
+        submission_ratings[nz_row[i],nz_col[i]] = pred[nz_row[i],nz_col[i]]
+
+    f = open(path, 'wt')
+    try:
+        writer = csv.writer(f)
+        writer.writerow( ('Id', 'Prediction') )
+        for i in range(0, len(nz_col)):
+            ide = "r" + str(nz_col[i]+1) + "_c" + str(nz_row[i]+1)
+            writer.writerow((ide, int(submission_ratings[nz_row[i],nz_col[i]] + 0.5)))
+    finally:
+        f.close()
+
+
+def split_data(ratings, num_items_per_user, num_users_per_item,
+               min_num_ratings, p_test=0.1):
+    """split the ratings to training data and test data.
+    Args:
+        min_num_ratings: 
+            all users and items we keep must have at least min_num_ratings per user and per item. 
+    """
+    # set seed
+    np.random.seed(988)
+    
+    # select user and item based on the condition.
+    valid_users = np.where(num_items_per_user >= min_num_ratings)[0]
+    valid_items = np.where(num_users_per_item >= min_num_ratings)[0]
+    valid_ratings = ratings[valid_items, :][: , valid_users]  
+    
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    # split the data and return train and test data. TODO
+    # NOTE: we only consider users and movies that have more
+    # than 10 ratings
+    # ***************************************************
+    
+    # build rating matrix.
+    rows, cols = ratings.get_shape()
+
+    
+    train = sp.lil_matrix((rows, cols))
+    test = sp.lil_matrix((rows, cols))
+    
+    print(rows, cols)
+    
+    nz_row, nz_col = valid_ratings.nonzero()
+    print(len(nz_col))
+    print(len(nz_row))
+    for i in range(0, len(nz_col)):
+        rand = np.random.random()
+        if rand > p_test:
+            train[nz_row[i],nz_col[i]] = valid_ratings[nz_row[i],nz_col[i]]
+        else:
+            test[nz_row[i],nz_col[i]] = valid_ratings[nz_row[i],nz_col[i]]
+               
+    print("Total number of nonzero elements in original data:{v}".format(v=valid_ratings.nnz))
+    print("Total number of nonzero elements in train data:{v}".format(v=train.nnz))
+    print("Total number of nonzero elements in test data:{v}".format(v=test.nnz))
+    return valid_ratings, train, test
+
+
+
+def compute_error(data, user_features, item_features, nz):
+    """compute the loss (MSE) of the prediction of nonzero elements."""
+    # ***************************************************
+    # INSERT YOUR CODE HERE
+    # TODO
+    # calculate rmse (we only consider nonzero entries.)
+    # ***************************************************
+    pred = item_features @ user_features.T
+    diff = data[nz] - pred[nz]
+    rmse = 1/2 * np.sum(np.square(diff)) / len(nz[0])
+    
+    return rmse
