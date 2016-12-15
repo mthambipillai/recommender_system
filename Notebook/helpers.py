@@ -181,6 +181,6 @@ def compute_error(data, user_features, item_features, nz):
     # ***************************************************
     pred = item_features @ user_features.T
     diff = data[nz] - pred[nz]
-    rmse = 1/2 * np.sum(np.square(diff)) / len(nz[0])
+    rmse = np.sqrt(np.sum(np.square(diff)) / len(nz[0]))
     
     return rmse
