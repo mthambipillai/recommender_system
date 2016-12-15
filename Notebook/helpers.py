@@ -5,7 +5,20 @@ from itertools import groupby
 
 import numpy as np
 import scipy.sparse as sp
+import pandas as pd
 
+
+def write_data(path_dataset, submission_ratings):
+    f = open(path_dataset, 'wt')
+    nz_row, nz_col = submission_ratings.nonzero()
+    try:
+        writer = csv.writer(f)
+        writer.writerow( ('Id', 'Prediction') )
+        for i in range(0, len(nz_col)):
+            ide = "r" + str(nz_col[i]+1) + "_c" + str(nz_row[i]+1)
+            writer.writerow((ide, int(submission_ratings[nz_row[i],nz_col[i]] + 0.5)))
+    finally:
+        f.close()
 
 def read_txt(path):
     """read text file from path."""
@@ -17,6 +30,22 @@ def load_data(path_dataset):
     """Load data in text format, one rating per line, as in the kaggle competition."""
     data = read_txt(path_dataset)[1:]
     return preprocess_data(data).T
+
+# Read in data
+def loadDataFrame(path):
+    d = []
+    with open(path, "r") as f:
+        lines = f.read().splitlines()[1:]
+    for line in lines:
+        (row_col, rating)=line.split(',')
+        row_col = row_col.replace("r", "")
+        row_col = row_col.replace("c", "")
+        row, col = row_col.split('_')
+        d.append([int(row), int(col), float(rating)])
+        
+    data = pd.DataFrame(d, columns = ["user", "item", "rating"])
+
+    return data
 
 
 def preprocess_data(data):
