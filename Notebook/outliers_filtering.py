@@ -61,9 +61,9 @@ def plot_disagreements(d):
     """Plots the disagreements"""
     nz_row, nz_col = d.nonzero()
     nz_d = list(zip(nz_row, nz_col))
-    l = np.array([])
-    for i, u in nz_d:
-        l = np.append(l,d[i,u])
+    l = np.empty(len(nz_d))#np.array([]) 
+    for idx, e in enumerate(nz_d): 
+        l[idx] = d[e[0], e[1]] 
     print(sum(l)/len(l))
     plt.plot(sorted(l))
 
