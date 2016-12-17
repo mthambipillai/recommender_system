@@ -105,7 +105,14 @@ def calculate_mse(real_label, prediction):
 
 import csv
 import sys
+
 def exportSubmission(path, pred):
+    """Exports the prediction to a path as a csv file.
+
+    Args:
+        path: Path where to create the csv submission file.
+        pred: The prediction to write in the file.
+    """
     path_dataset = "data/sampleSubmission.csv"
     submission_ratings = load_data(path_dataset)
     submission_ratings.shape
@@ -128,8 +135,12 @@ def split_data(ratings, num_items_per_user, num_users_per_item,
                min_num_ratings, p_test=0.1):
     """split the ratings to training data and test data.
     Args:
-        min_num_ratings: 
-            all users and items we keep must have at least min_num_ratings per user and per item. 
+        min_num_ratings: all users and items we keep must have
+            at least min_num_ratings per user and per item.
+        p_test: The probability to add a rating to the test set
+
+    Returns:
+        The ratings considered valid, the training set, the test set
     """
     # set seed
     np.random.seed(988)
@@ -139,25 +150,13 @@ def split_data(ratings, num_items_per_user, num_users_per_item,
     valid_items = np.where(num_users_per_item >= min_num_ratings)[0]
     valid_ratings = ratings[valid_items, :][: , valid_users]  
     
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # split the data and return train and test data. TODO
-    # NOTE: we only consider users and movies that have more
-    # than 10 ratings
-    # ***************************************************
-    
-    # build rating matrix.
     rows, cols = ratings.get_shape()
-
     
     train = sp.lil_matrix((rows, cols))
     test = sp.lil_matrix((rows, cols))
     
-    print(rows, cols)
-    
     nz_row, nz_col = valid_ratings.nonzero()
-    print(len(nz_col))
-    print(len(nz_row))
+
     for i in range(0, len(nz_col)):
         rand = np.random.random()
         if rand > p_test:
@@ -173,12 +172,18 @@ def split_data(ratings, num_items_per_user, num_users_per_item,
 
 
 def compute_error(data, user_features, item_features, nz):
-    """compute the loss (MSE) of the prediction of nonzero elements."""
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # TODO
-    # calculate rmse (we only consider nonzero entries.)
-    # ***************************************************
+    """compute the loss (MSE) of the prediction of nonzero elements.
+    calculate rmse (we only consider nonzero entries.)
+
+    Args:
+        data: The data set of the ratings
+        user_features: The 'Z' matrix for all the user features
+        item_features: The 'W' matrix for all the item features
+        nz: The non zero entries of the data
+
+    Returns:
+        The RMSE of the prediction
+    """
     pred = item_features @ user_features.T
     diff = data[nz] - pred[nz]
     rmse = np.sqrt(np.sum(np.square(diff)) / len(nz[0]))
