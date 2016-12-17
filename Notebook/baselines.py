@@ -26,3 +26,9 @@ def baseline_item_mean(train, test):
     test_means = test.sum(axis = 1) / (test.getnnz(axis=1)+1e-12).reshape(num_items, 1)
     
     return train_means, test_means
+
+def compute_rmse(valid_ratings, pred):
+    nz = valid_ratings.nonzero()
+    diff = valid_ratings[nz] - pred[nz]
+    rmse = np.sqrt(np.sum(np.square(diff)) / len(nz[0]))
+    return rmse
