@@ -189,3 +189,17 @@ def compute_error(data, user_features, item_features, nz):
     rmse = np.sqrt(np.sum(np.square(diff)) / len(nz[0]))
     
     return rmse
+
+
+def pick_lowest_rmse(data, results, nz):
+    minima=1000
+    best_user_features, best_item_features = results[0]
+    for i in range(0,len(results)):
+        user_features, item_features = results[i]
+        rmse = compute_error(data, user_features, item_features, nz)
+        print(rmse)
+        if(rmse < minima):
+            minima = rmse
+            best_user_features = user_features
+            best_item_features = item_features
+    return minima, best_user_features, best_item_features
