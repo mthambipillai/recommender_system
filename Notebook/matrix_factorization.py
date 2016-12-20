@@ -2,6 +2,7 @@ import numpy as np
 import math
 from plots import visualization
 from helpers import compute_error
+from helpers import compute_error_biais
 from baselines import baseline_global_mean
 from biaises import biaises
 
@@ -25,10 +26,17 @@ def init_MF(train, num_features):
     return user_features, item_features
 
 def init_MF_random(train, num_features):
+    #num_items, num_users = train.shape
+    #user_features = np.random.rand(num_users, num_features)*(math.sqrt(5)/num_features)
+    #item_features = np.random.rand(num_items, num_features)*math.sqrt(5)
+    
+    
+    mean = baseline_global_mean(train, train)[0]
     num_items, num_users = train.shape
-    user_features = np.random.rand(num_users, num_features)*(math.sqrt(5)/num_features)
-    item_features = np.random.rand(num_items, num_features)*math.sqrt(5)
+    user_features = np.ones((num_users, num_features))/np.sqrt(num_features/mean)*(np.random.rand(num_users, num_features))*2
+    item_features = np.ones((num_items, num_features))/np.sqrt(num_features/mean)*(np.random.rand(num_items, num_features))*2
     return user_features, item_features
+
 
 
 def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
@@ -51,8 +59,9 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
     errors_test = []
 
     # init matrix
-    user_features, item_features = init_MF(train, num_features)
-    biaises = biaises(train)
+    user_features, item_features = init_MF_random(train, num_features)
+    
+    #biais = biaises(train)
     
     # find the non-zero ratings indices 
     nz_row, nz_col = train.nonzero()
@@ -72,7 +81,7 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
         np.random.shuffle(nz_train)
         
         #compute prediction
-        pred = (item_features @ user_features.T) + biaises
+        pred = (item_features @ user_features.T) #+ biais
         #init gradients
         item_grad = np.zeros(item_features.shape)
         user_grad = np.zeros(user_features.shape)
@@ -87,7 +96,7 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
         item_features += item_grad
         user_features += user_grad
         
-        if(it%10==0):
+        if(it%1==0):
             #compute the train error
             rmse = compute_error(train, user_features, item_features, train.nonzero())
             #print("iter: {}, RMSE on training set: {}.".format(it, rmse))
@@ -98,10 +107,8 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
             #compute the test error
             rmse = compute_error(test, user_features, item_features, test.nonzero())
             errors_test.append(rmse)
-            if(previous_test_rmse < rmse):
-                break
-            else:
-                previous_test_rmse = rmse
+            
+            previous_test_rmse = rmse
             #print("iter: {}, RMSE on test set: {}.".format(it, rmse))
 
     #plot the train and test errors

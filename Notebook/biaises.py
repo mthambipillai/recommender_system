@@ -14,8 +14,8 @@ def biaises(data):
     """
     num_items, num_users = data.shape
     mean = data[data.nonzero()].mean()
-    user_means = data.sum(axis = 0) / (data.getnnz(axis=0)+1e-12)
-    item_means = data.sum(axis = 1) / (data.getnnz(axis=1)+1e-12).reshape(num_items, 1)
+    user_means = data.sum(axis = 0).reshape(num_users, 1) / (data.getnnz(axis=0)+1e-12).reshape(num_users, 1)
+    item_means = (data.sum(axis = 1) / (data.getnnz(axis=1)+1e-12).reshape(num_items, 1))
 
     nz_row, nz_col = data.nonzero()
     nz_data = list(zip(nz_row, nz_col))
