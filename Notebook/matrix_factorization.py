@@ -61,7 +61,8 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
     # init matrix
     user_features, item_features = init_MF_random(train, num_features)
     
-    #biais = biaises(train)
+    b = biaises(train)
+    b_test = biaises(test)
     
     # find the non-zero ratings indices 
     nz_row, nz_col = train.nonzero()
@@ -81,7 +82,7 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
         np.random.shuffle(nz_train)
         
         #compute prediction
-        pred = (item_features @ user_features.T) #+ biais
+        pred = (item_features @ user_features.T) + b
         #init gradients
         item_grad = np.zeros(item_features.shape)
         user_grad = np.zeros(user_features.shape)
@@ -96,20 +97,23 @@ def matrix_factorization_SGD(train, test, num_epochs=200, num_features=20):
         item_features += item_grad
         user_features += user_grad
         
-        if(it%1==0):
+        if(it%10==0):
             #compute the train error
-            rmse = compute_error(train, user_features, item_features, train.nonzero())
-            #print("iter: {}, RMSE on training set: {}.".format(it, rmse))
+            rmse = compute_error_biais(train, user_features, item_features, train.nonzero(), b)
             errors.append(rmse)
-            
             print("iter: {}, RMSE on training set: {}.".format(it, rmse))
             
             #compute the test error
-            rmse = compute_error(test, user_features, item_features, test.nonzero())
+            rmse = compute_error_biais(test, user_features, item_features, test.nonzero(), b_test)
             errors_test.append(rmse)
+            print("iter: {}, RMSE on test set: {}.".format(it, rmse))
+
+            if(previous_test_rmse < rmse):
+                break
             
             previous_test_rmse = rmse
-            #print("iter: {}, RMSE on test set: {}.".format(it, rmse))
+            
+
 
     #plot the train and test errors
     visualization(np.linspace(1,len(errors),len(errors_test)),errors,errors_test)

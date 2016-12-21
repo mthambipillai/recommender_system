@@ -199,6 +199,7 @@ def compute_error_biais(data, user_features, item_features, nz, biais):
         user_features: The 'Z' matrix for all the user features
         item_features: The 'W' matrix for all the item features
         nz: The non zero entries of the data
+        biais: The biaises used for the prediction
 
     Returns:
         The RMSE of the prediction
