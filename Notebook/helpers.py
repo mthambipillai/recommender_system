@@ -16,7 +16,7 @@ def write_data(path_dataset, submission_ratings):
         writer.writerow( ('Id', 'Prediction') )
         for i in range(0, len(nz_col)):
             ide = "r" + str(nz_col[i]+1) + "_c" + str(nz_row[i]+1)
-            writer.writerow((ide, int(submission_ratings[nz_row[i],nz_col[i]] + 0.5)))
+            writer.writerow((ide, submission_ratings[nz_row[i],nz_col[i]]))
     finally:
         f.close()
 
@@ -185,6 +185,26 @@ def compute_error(data, user_features, item_features, nz):
         The RMSE of the prediction
     """
     pred = item_features @ user_features.T
+    diff = data[nz] - pred[nz]
+    rmse = np.sqrt(np.sum(np.square(diff)) / len(nz[0]))
+    
+    return rmse
+
+def compute_error_biais(data, user_features, item_features, nz, biais):
+    """compute the loss (MSE) of the prediction of nonzero elements.
+    calculate rmse (we only consider nonzero entries.)
+
+    Args:
+        data: The data set of the ratings
+        user_features: The 'Z' matrix for all the user features
+        item_features: The 'W' matrix for all the item features
+        nz: The non zero entries of the data
+        biais: The biaises used for the prediction
+
+    Returns:
+        The RMSE of the prediction
+    """
+    pred = item_features @ user_features.T + biais
     diff = data[nz] - pred[nz]
     rmse = np.sqrt(np.sum(np.square(diff)) / len(nz[0]))
     
