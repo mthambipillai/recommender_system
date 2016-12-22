@@ -12,6 +12,7 @@ def biaises(data):
     Returns:
         the biaises for all ratings in data
     """
+    print("Computing the biaises of the data...")
     num_items, num_users = data.shape
     mean = data[data.nonzero()].mean()
     user_means = data.sum(axis = 0).reshape(num_users, 1) / (data.getnnz(axis=0)+1e-12).reshape(num_users, 1)

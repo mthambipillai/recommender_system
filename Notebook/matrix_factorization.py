@@ -128,3 +128,59 @@ def multiple_matrix_factorization_SGD(train, test, num_epochs=200, num_features=
         user_features, item_features = matrix_factorization_SGD(train, test, num_epochs, num_features)
         results.append((user_features, item_features))
     return results
+
+
+
+def matrix_factorization_SGD_submission(data, data_biaises, num_epochs=200, num_features=20):
+    """matrix factorization optimized by SGD and optimized for submission.
+    Args:
+        data: The ratings data
+        num_epochs: The number of iterations for SGD
+        num_features: The number of features 'k'
+
+    Returns:
+        The optimized 'Z' matrix for the user features (shape = num_users, num_features),
+        The optimized 'W' matrix for the item features (shape = num_items, num_features),
+    """
+    # define parameters
+    gamma = 0.0005
+    lambda_user = 0.1
+    lambda_item = 0.7
+    errors = []
+
+    # init matrix
+    user_features, item_features = init_MF_random(data, num_features)
+    
+    # find the non-zero ratings indices 
+    nz_row, nz_col = data.nonzero()
+    nz_data = list(zip(nz_row, nz_col))
+
+    print("learn the matrix factorization using SGD...")
+
+    for it in range(num_epochs):        
+        # shuffle the training rating indices
+        np.random.shuffle(nz_data)
+        
+        #compute prediction
+        pred = (item_features @ user_features.T) + data_biaises
+        #init gradients
+        item_grad = np.zeros(item_features.shape)
+        user_grad = np.zeros(user_features.shape)
+        nb = int(len(nz_data)/(5+np.sqrt(it)))
+        for d, n in nz_data[:nb]:
+            pred_error = data[d, n] - pred[d, n]
+            #compute gradients
+            item_grad[d,:] += pred_error * user_features[n,:] * gamma
+            user_grad[n,:] += pred_error * item_features[d,:] * gamma
+        
+        #update item and user matrices
+        item_features += item_grad
+        user_features += user_grad
+
+        if(it%10==0):
+            print("Doing iter : {}".format(it))
+
+    rmse = compute_error_biais(data, user_features, item_features, data.nonzero(), data_biaises)
+    print("Done with a RMSE of : {}".format(rmse))
+    
+    return user_features, item_features
