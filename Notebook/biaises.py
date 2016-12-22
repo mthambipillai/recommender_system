@@ -27,4 +27,17 @@ def biaises(data):
         item_deviation = item_means[item] - mean
         biaises[item, user] = mean + user_deviation + item_deviation
 
+    return biaises, mean, item_means, user_means
+
+def submission_biaises(submission_sample, mean, item_means, user_means):
+    num_items, num_users = submission_sample.shape
+    nz_row, nz_col = submission_sample.nonzero()
+    nz_data = list(zip(nz_row, nz_col))
+
+    biaises = sp.lil_matrix(submission_sample.shape)
+    for item, user in nz_data:
+        user_deviation = user_means[user] - mean
+        item_deviation = item_means[item] - mean
+        biaises[item, user] = mean + user_deviation + item_deviation
+
     return biaises
